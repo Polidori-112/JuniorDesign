@@ -1,41 +1,81 @@
-int on = A0;
-int off = A1;
+int on = 0;
+int off = 1;
+float v_on;
+float v_off;
+
+#define RED_LED 9
+#define GREEN_LED 10
+#define BLUE_LED 11
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(on, INPUT);
-  pinMode(off, INPUT);
+  pinMode(on, INPUT_PULLUP);
+  pinMode(off, INPUT_PULLUP);
   Serial.begin(9600);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  v_on = analogRead(on) * (5.0 / 1023.0);
-  Serial.print(v_on);
-  wait 
 
-  bool on_pressed() {
-    v_on = analogRead(on) * (5.0 / 1023.0);
-    if (v_on > 3.0) {
+  if(on_pressed()) {
+    runState();
+  }
+}
+
+bool on_pressed() {
+    v_on = digitalRead(on);
+    if (v_on == 1.0) {
+      return true;
+    }
+    return false;
+
+  }
+
+bool off_pressed() {
+    v_off = digitalRead(off);
+    if (v_off == 1.0) {
       return true;
     }
     return false;
   }
 
-  bool off_pressed() {
-    v_off = analogRead(off) * (5.0 / 1023.0);
-    if (v_off > 3.0) {
+bool both_pressed() {
+    v_on = digitalRead(on);
+    v_off = digitalRead(off);
+    if (v_on == 1.0 && v_off == 1.0) {
       return true;
     }
     return false;
-  }
+}
 
-  bool both_pressed() {
-    v_on = analogRead(on) * (5.0 / 1023.0);
-    v_off = analogRead(off) * (5.0 / 1023.0);
-    if (v_on > 3.0 && v_off > 3.0) {
-      return true;
+void runState() {
+  int red_T = 50;
+  float fade = 255;
+  bool red_on;
+  for (int i = 0; i < 7500; i++) {
+    delay(1);
+    //flash red led
+    if ((i % red_T) == 0)
+      red_on = !red_on;
+    
+    if (red_on)
+      analogWrite(RED_LED, 255);
+    else
+      digitalWrite(RED_LED, LOW);
+    //green led fade
+    if (i < 6000) {
+      fade = fade - (0.0425);
+      //Serial.println(fade);
+      //Serial.println(i);
+      analogWrite(GREEN_LED, (int)fade);
     }
-    return false
+    //green led flash
+    else {
+      if (((i < 6500) or (i > 7000)))
+        analogWrite(GREEN_LED, 255);
+      else if (((i > 6500) or (i < 7000)))
+        digitalWrite(GREEN_LED, LOW);
+    }
   }
+  runState();
 }
