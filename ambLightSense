@@ -1,0 +1,33 @@
+#define photo A0
+#define nite 3
+float med = 1.5;
+float lo = 3;
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(nite, OUTPUT);
+  pinMode(photo, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  float light_level = analogRead(A0);
+  light_level = light_level * (5.0 / 1023.0);
+  Serial.println(light_level);
+
+  if (light_level >= lo) {
+    digitalWrite(nite, HIGH);
+  }
+
+  if (light_level < lo) {
+    blink();
+  }
+}
+
+void blink() {
+  digitalWrite(nite, HIGH);
+  delay(50);
+  digitalWrite(nite, LOW);
+  delay(50);
+}
