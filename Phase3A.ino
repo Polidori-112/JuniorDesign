@@ -1,3 +1,14 @@
+#define batteryReader A0
+#define RED_LED 9
+#define GREEN_LED 10
+#define BLUE_LED 11
+
+int value = 0;
+int brightness = 0;
+float voltage;
+float R2 = 1000.0;
+float R1 = 2000.0;
+
 #define M1CTL 5
 #define M1A 8
 #define M1B 7
@@ -21,6 +32,9 @@ void setup() {
   digitalWrite(M1B, LOW);
   Serial.begin(9600);
 
+  //Read the battery
+  batteryRead();
+
 }
 
 void loop() {
@@ -33,6 +47,8 @@ void loop() {
   //Serial.println(val.mag);
   followBlue(val);
   delayCheck(1000);
+
+  batteryRead();
 }
 
 void delayCheck(int delay) {
@@ -131,6 +147,37 @@ int findColor() {
     return 0;
   else
     return 3;
+}
+
+void batteryRead() {
+  if (millis() % 3000 == 0) {
+    voltage = analogRead(batteryReader) * (5.0/1024)*((R1 + R2)/R2);
+    Serial.print("Voltage =");
+    Serial.println(voltage);
+    //map battery into values from 0 to 255
+    brightness = map(value, 3, 6.4, 0, 255);
+    analogWrite(GREEN_LED, brightness);
+
+    if (voltage <= 4.8) {
+      analogWrite(GREEN_LED, 0);
+    }
+    else if (voltage <= 5.5) {
+      analogWrite(GREEN_LED, 155);
+    }
+    else {
+      analogWrite(GREEN_LED, 255);
+    }
+    // else if (voltage >= 5) {
+    //   digitalWrite(GREEN_LED, LOW);
+    //   digitalWrite(RED_LED, LOW);
+    //   digitalWrite(BLUE_LED, HIGH);
+    // }
+    // else {
+    //   digitalWrite(GREEN_LED, LOW);
+    //   digitalWrite(RED_LED, HIGH);
+    //   digitalWrite(BLUE_LED, LOW);
+    // }
+  }
 }
 
 
@@ -242,5 +289,3 @@ void stop() {
   digitalWrite(M1CTL, 0);
   digitalWrite(M2CTL, 0);  
 }
-
-
