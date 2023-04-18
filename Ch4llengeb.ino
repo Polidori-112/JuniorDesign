@@ -6,6 +6,7 @@
 int value = 0;
 int brightness = 0;
 float voltage;
+float light_level;
 float R2 = 1000.0;
 float R1 = 2000.0;
 
@@ -26,6 +27,11 @@ float R1 = 2000.0;
 #define B_col 13
 #define R_col 12
 #define col A5
+
+//headlights
+#define photo A0
+#define head 5
+#define tail 6
 
 #define light_thresh 100
 
@@ -71,35 +77,23 @@ void loop() {
   delay(1000);
 
 }
-void forwards(int ms) {
-  // Set forward direction
-  digitalWrite(M1B, LOW);
-  digitalWrite(M1A, HIGH);
-  digitalWrite(M2B, LOW);
-  digitalWrite(M2A, HIGH);
-
-  // Turn motor on 
-  analogWrite(M1CTL, 76);
-  analogWrite(M2CTL, 75);
-  delayCheck(ms);
-  analogWrite(M1CTL, 0);
-  analogWrite(M2CTL, 0);
-}
-
 
 void delayCheck(int delay) {
   int time_now = millis();
   //perform all checks in this loop
-  while (millis() < (time_now + delay)) {
-    //if analogRead((distIn < 100)) return;
-      if (analogRead(distIn) > 100)
+  while (millis() < (time_now + delay - 150)) {
+    //collision sensor
+    if (analogRead(distIn) > 100)
       digitalWrite(distOut, HIGH);
-  else {
-    digitalWrite(distOut, LOW);
-    stop();
-    return;
-  }
-
+    else {
+      digitalWrite(distOut, LOW);
+      stop();
+      return;
+    }
+    //headlight sensor
+    light_level = analogRead(photo);
+    if(light_level <= 4.0)
+      doCh4llenge();
 
   }
   return;
@@ -149,6 +143,47 @@ void forwardish(int p, int ms) {
   analogWrite(M2CTL, 0);
 }
 
+void doCh4llenge() {
+  digitalWrite(head, LOW);
+  delay(250);
+  digitalWrite(head, HIGH);
+  delay(250);
+  digitalWrite(head, LOW);
+  delay(250);
+  digitalWrite(head, HIGH);
+  delay(500);
+  digitalWrite(tail, HIGH);
+  delay(1000);
+  digitalWrite(tail, LOW);
+  crank90_L();
+  crank90_L();
+  followYellow(0);  
+}
+
+
+
+
+/*Code Below here shouldn't be used*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void batteryRead() {
@@ -182,9 +217,6 @@ void batteryRead() {
   }
 }
 
-
-
-
 //p is out of 255
 void forward(int p, int ms) {
   // Set forward direction
@@ -217,11 +249,11 @@ void backward(int p, int ms) {
 }
 
 void crank90_R() {
-  pivot_R(77, 1000);
+  pivot_R(77, 800);
 }
 
 void crank90_L() {
-  pivot_L(77, 1000);
+  pivot_L(77, 800);
 }
 
 void turn_L(int p, int ms) {
@@ -291,146 +323,6 @@ void stop() {
 }
 
 
-void blinkFunction() {
-  Serial.println("I'm blinking.");
-  while (true) {
-    digitalWrite(10, HIGH);
-    delay(500);  
-    digitalWrite(10, LOW);
-    delay(500);     
-  }
-}
-
-//F392FC86D8D7
-void postRequest(char *message) {
-  Serial.print("Sending post request: ");
-  Serial.println(message);
-  Serial.println("");
-  delay(300); 
-  if (client.connect(server,80)) { 
-    //Serial.println("POST request");
-    //this robot is F392FC86D8D7, the other robot is 4A9EDB0160D5 
-    client.println("POST /F392FC86D8D7/4A9EDB0160D5 HTTP/1.1");
-    client.println("Host: ee31.ece.tufts.edu");
-    client.println("Content-Type: application/x-www-form-urlencoded");
-    client.print("Content-Length: ");
-    client.println(strlen(message));
-    client.println();
-    client.print(message);
-    client.println("Connection: close");
-    client.println();
-  }
-  delay(5000);
-}
-
-String getRequest() {
-  Serial.println("GET Request");
-  if (client.connect(server,80)) {
-    Serial.println("Client Connected");
-    //this robot is F392FC86D8D7, the other robot is 4A9EDB0160D5 
-    client.println("GET /F392FC86D8D7/4A9EDB0160D5 HTTP/1.1");
-    client.println("Host: ee31.ece.tufts.edu");
-    client.println("Connection: close");
-    client.println();
-  } else {
-    Serial.println("connection failed");
-  }
-
-  delay(300);
-
-  // int reading = client.read();
-  // while (reading != -1) {
-  //   Serial.print((char) reading);
-  //   reading = client.read();
-  // }
-
-  int reading = client.read();
-  int secondReading = 0;
-  int idx = 0;
-
-  while(reading != -1) {
-    if (reading == 13 && secondReading == 10) {
-      break;
-    }
-    secondReading = reading; 
-    reading = client.read();
-  }
-
-  while(reading != -1 && idx < 255) {
-      messageData[idx] = reading;
-      idx++;
-      reading = client.read();
-    }
-    messageData[idx] = '\0'; 
-    //Serial.write(messageData);
-  
-  //delay(5000); 
-
-  //Convert messageData into a string
-  String messageString = String(messageData);
-
-  //Parse messageData. "senderID=F392FC86D8D7&receiverID=F392FC86D8D7&message=Success&MYMESSAGE.="
-  int startIndex = messageString.indexOf("Success&") + 8;
-  int endIndex = messageString.length() - 1;
-
-  // Extract the substring between the start and end indexes
-  String parsedMessage = messageString.substring(startIndex, endIndex);
-
-  // Print the extracted string
-  //Serial.println(parsedMessage);
-  return parsedMessage;
-}
-
-void printWifiData() {
-  // print your board's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-  Serial.println(ip);
-
-  // print your MAC address:
-  byte mac[6];
-  WiFi.macAddress(mac);
-  Serial.print("MAC address: ");
-  printMacAddress(mac);
-}
-
-void printCurrentNet() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print the MAC address of the router you're attached to:
-  byte bssid[6];
-  WiFi.BSSID(bssid);
-  Serial.print("BSSID: ");
-  printMacAddress(bssid);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.println(rssi);
-
-  // print the encryption type:
-  byte encryption = WiFi.encryptionType();
-  Serial.print("Encryption Type:");
-  Serial.println(encryption, HEX);
-  Serial.println();
-}
-
-void printMacAddress(byte mac[]) {
-  for (int i = 5; i >= 0; i--) {
-    if (mac[i] < 16) {
-      Serial.print("0");
-    }
-    Serial.print(mac[i], HEX);
-    if (i > 0) {
-      Serial.print(":");
-    }
-  }
-  Serial.println();
-}
-
 void pinSetup() {
   pinMode(distOut, OUTPUT);
   pinMode(12, OUTPUT);
@@ -451,5 +343,9 @@ void pinSetup() {
   digitalWrite(M2A, LOW);
   digitalWrite(M2B, LOW);
 
-  digitalWrite(13, LOW);
+  pinMode(photo, INPUT);
+  pinMode(head, OUTPUT);
+  pinMode(tail, OUTPUT);
+  digitalWrite(head, HIGH);
+  digitalWrite(tail, LOW);
 }
