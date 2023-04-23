@@ -1,0 +1,34 @@
+
+int val = 0;
+void setup() {
+  // put your setup code here, to run once:
+
+
+  pinMode(A3,INPUT); //SETS A3 pin 
+  Serial.begin(9600); // establishes comm 
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  //Serial.println("some random string");
+  val = analogRead(A3); // analog read the pin 
+  digitalWrite(3,HIGH); //on pin for 3
+  delay(200); //WAITING FOR TWO SECONDS
+  digitalWrite(3,LOW); // off pin for 3
+  delay(200);
+  Serial.println(val);
+
+}
+
+
+
+//SET PIN FOR A3 
+// ANALOG READ THAT PIN 
+// DETERMINE A CUTOFF VALUE 
+// WHATS THE VAKLYE FOR DARK AND LIGHT
+// SET ANOUTPUT PIN FOR HIGH 
+// serial
+// begin 
+
+// 
