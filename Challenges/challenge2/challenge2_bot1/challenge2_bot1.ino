@@ -1,3 +1,5 @@
+// This is vitabot
+
 #define batteryReader A0
 #define RED_LED 9
 #define GREEN_LED 10
@@ -47,20 +49,33 @@ void setup() {
   
   pinSetup();
   Serial.begin(9600);
-  
+
+  movement_calibration();
+
   // Setup wifi
   wifiSetup();
 
-  //wait for the other bot
-  Serial.println("Sending START. Waiting for START.");
+  //Wait for other bot
+  Serial.println("Sending START. waiting for START.");
   postRequest("START");
   waitFor("START");
+
+  // //Robot sends commands
+  // sendCommands();
+
+  // //Robot gets commands
+  // getAllCommands();
 }
 
 void loop() {
-  //Robot sends commands
-  sendCommands();
-  //getCommands();
+
+}
+
+void getAllCommands() {
+  for (int i = 0; i < 10; i++) {
+    getCommands();
+    delay(1000);
+  }
 }
 
 void waitFor(String str) {
@@ -73,7 +88,7 @@ void waitFor(String str) {
 
 void sendCommands() {
   Serial.println("Sending command 1: forward 12 inches");
-  postRequest("FORWARD 2000");
+  postRequest("FORWARD 2200");
   waitFor("BUSY");
 
   Serial.println("Sending command 2: full rotation");
@@ -81,18 +96,36 @@ void sendCommands() {
   waitFor("BUSY");
 
   Serial.println("Sending command 3: back 3 inches");
-  postRequest("BACK 500");
+  postRequest("BACKWARD 600");
   waitFor("BUSY");
 
   Serial.println("Sending command 4: left");
   postRequest("LEFT 0");
   waitFor("BUSY");
 
-  for (int i = 0; i < 3; i++) {
-    Serial.println("Sending command: right");
-    postRequest("RIGHT 0");
-    waitFor("BUSY");
-  }
+  Serial.println("Sending command 5: move a bit");
+  postRequest("FORWARD 500");
+  waitFor("BUSY");
+
+  Serial.println("Sending command 6: turn right");
+  postRequest("RIGHT 0");
+  waitFor("BUSY");
+
+  Serial.println("Sending command 7: forward a lot");
+  postRequest("FORWARD 2000");
+  waitFor("BUSY");
+
+  Serial.println("Sending command 8: turn right");
+  postRequest("RIGHT 0");
+  waitFor("BUSY");
+
+  Serial.println("Sending command 9: turn right");
+  postRequest("RIGHT 0");
+  waitFor("BUSY");
+
+  Serial.println("Sending command 10: backwards a bit");
+  postRequest("BACKWARD 600");
+  waitFor("BUSY");
 }
 
 void getCommands() {
@@ -121,14 +154,54 @@ void getCommands() {
     crank90_R();
   }
   else if (action == "FULLROTATION") {
-    crank90_R();
-    crank90_R();
+    fullrotation();
   }
   else {
     stop();
   }
   //Stop before next command
   stop();
+}
+
+void movement_calibration() {
+  //Forward inches
+  forward(100, 2200);
+  delay(1000);
+
+  //Full rotation
+  fullrotation();
+  delay(1000);
+
+  // //Backwards
+  backward(100, 600);
+  delay(1000);
+
+  //Turn left
+  crank90_L();
+  delay(1000);
+
+  // Move a lil bit?
+  forward(100, 500);
+  delay(1000);
+
+  //Turn Right
+  crank90_R();
+  delay(1000);
+
+  //forwards 15
+  forward(100, 2000);
+  delay(1000);
+
+  //Turn Right
+  crank90_R();
+  delay(1000);
+  //Turn Right
+  crank90_R();
+  delay(1000);
+
+  //Backwards a lil bit
+  backward(100, 600);
+  delay(1000);
 }
 
 void delayCheck(int delayT) {
@@ -222,8 +295,8 @@ void forward(int p, int ms) {
   digitalWrite(M2A, HIGH);
 
   // Turn motor on 
-  analogWrite(M1CTL, p);
-  analogWrite(M2CTL, p);
+  analogWrite(M1CTL, p + 18); //right should go slightly faster
+  analogWrite(M2CTL, p); //
   delayCheck(ms);
   analogWrite(M1CTL, 0);
   analogWrite(M2CTL, 0);
@@ -237,7 +310,7 @@ void backward(int p, int ms) {
   digitalWrite(M2B, HIGH);
 
   // Turn motor on 
-  analogWrite(M1CTL, p);
+  analogWrite(M1CTL, p + 18);
   analogWrite(M2CTL, p);
   delay(ms);
   analogWrite(M1CTL, 0);
@@ -245,12 +318,43 @@ void backward(int p, int ms) {
 }
 
 void crank90_R() {
-  pivot_R(77, 1000);
+  pivot_R(90, 750);
 }
 
 void crank90_L() {
-  pivot_L(77, 1000);
+  pivot_L(90, 760+30);
 }
+
+void matt_left_90() {
+  // Set backward direction
+  digitalWrite(M1B, LOW);
+  digitalWrite(M1A, HIGH);
+
+  digitalWrite(M2B, HIGH);
+  digitalWrite(M2A, LOW);
+
+  analogWrite(M1CTL, 90);
+  analogWrite(M2CTL, 90);
+  delay(800);
+  analogWrite(M1CTL, 0);
+  analogWrite(M2CTL, 0); 
+}
+//90, 800
+void fullrotation() {
+  // Set backward direction
+  digitalWrite(M1B, LOW);
+  digitalWrite(M1A, HIGH);
+
+  digitalWrite(M2B, HIGH);
+  digitalWrite(M2A, LOW);
+
+  analogWrite(M1CTL, 90);
+  analogWrite(M2CTL, 90);
+  delay(1350+50);
+  analogWrite(M1CTL, 0);
+  analogWrite(M2CTL, 0); 
+}
+  
 
 void turn_L(int p, int ms) {
    // Set backward direction
