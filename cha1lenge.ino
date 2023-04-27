@@ -1,7 +1,10 @@
+
 #define batteryReader A0
-#define RED_LED 9
-#define GREEN_LED 10
+#define R 8
+#define G 9
 #define BLUE_LED 11
+#define GREEN_LED 11
+#define RED_LED 11
 
 int value = 0;
 int brightness = 0;
@@ -27,8 +30,13 @@ float R1 = 2000.0;
 #define R_col 12
 #define col A5
 
+#define com_in A3
+#define com_out 10
+
 #define light_thresh 100
 
+#define tail 0
+#define horn 11
 struct color {int val; int mag;};
 
 
@@ -55,7 +63,7 @@ void setup() {
   pinSetup();
   Serial.begin(9600);
   digitalWrite(12, HIGH);
-  digitalWrite(13, HIGH);
+  digitalWrite(13, LOW);
 
 
 }
@@ -65,54 +73,128 @@ void loop() {
   // delay(1000);
   // crank90_L();
   // crank90_R();
+  delayCheck(100);
+  digitalWrite(tail, LOW);
 
   //Robot 1 gets request
-  //cha11enge();
-  //delay(1000);
+  cha11enge();
+  cha12enge();
+  cha13enge();
+  cha14enge();
+  cha13enge();
+  cha13enge();
   //forward(100,100);
+  // digitalWrite(M1CTL, HIGH);
+  // digitalWrite(M2CTL, LOW);
+  // digitalWrite(M1A, HIGH);
+  // digitalWrite(M1B, LOW);
+  // digitalWrite(M2A, HIGH);
+  // digitalWrite(M2B, LOW);
+  // digitalWrite(12, HIGH);
+  // digitalWrite(13, LOW);
+  // digitalWrite(12, HIGH);
+  // digitalWrite(13, LOW);
   Serial.println(analogRead(col));
-  //delay(100);
+  delay(10000);
 
 }
 void cha11enge() {
   int c;
   //down, back
-  while (1) {
-   forward(100, 100);
-    if (analogRead(distIn) > 100) {
-      crank90_R();
-      crank90_R();
-      break;
-    }
-  }
+  // while (1) {
+  //  forward(100, 100);
+  //   if (analogRead(distIn) < 100) {
+  //     crank90_R();
+  //     crank90_R();
+  //     break;
+  //   }
+  // }
   while(1) {
-    digitalWrite(B_col, LOW);
+    digitalWrite(B_col,LOW);
     forward(100, 100);
     c = analogRead(col);
-    if (c > 600 && c < 660) {
+    if (c < 620) {
       //digitalWrite(B_col,HIGH);
-      //pivot_R(77, 850);
-      delay(1000);
+      // crank90_L();
+      // crank90_L();
+      forward(100, 400);
+      delay(500);
       followR(0);
       break;
     }
   }
+  pivot_L(77, 1100);
+  followR(0);
+  crank90_L();
+  forward(100, 1200);
 
-  delay(500);
+
+
+}
+void cha12enge() {
+  
+  //COMM ITEM HERE
+  crank90_L();
+  crank90_L();
+  forward(100, 100);
+  backward(100, 100);
+  followL(0);
+  digitalWrite(R_col, HIGH);
+  delay(250);
+  digitalWrite(R_col, HIGH);
+  delay(250);
+}
+void cha13enge() {
+  //COMM ITEM HERE
+
+  digitalWrite(R, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  delay(250);
+  digitalWrite(R, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  delay(250);
+  digitalWrite(R, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  delay(250);
+  digitalWrite(G, HIGH);
+
+  backward(100, 500);
   crank90_L();
   delay(500);
-
-  while(1) {
-    digitalWrite(B_col, HIGH);
-    forward(100, 100);
-    c = analogRead(col);
-    if(c > 480 && c < 550) { 
-      delay(1000);
-      followL(0);
-      break;
-    }
-  }
+  pivot_L(100, 400);
+  forward(100, 800);
+  
+  for (int i = 0; i < 1000; i++) {
+    digitalWrite(horn, LOW);
+    delay(1);
+    digitalWrite(horn, HIGH);
+    delay(1);
+  }  
+  digitalWrite(G, LOW);
+  digitalWrite(tail, HIGH);  
+  followR(0);
 }
+void 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void forwards(int ms) {
   // Set forward direction
   digitalWrite(M1B, LOW);
@@ -126,25 +208,28 @@ void forwards(int ms) {
   delayCheck(ms);
   analogWrite(M1CTL, 0);
   analogWrite(M2CTL, 0);
+
 }
 
 
-void delayCheck(int delay) {
-  int time_now = millis();
-  //perform all checks in this loop
-  while (millis() < (time_now + delay)) {
-    //if analogRead((distIn < 100)) return;
-      if (analogRead(distIn) < 100)
-      digitalWrite(distOut, LOW);
-  else {
-    digitalWrite(distOut, HIGH);
-    stop();
-    return;
-  }
+void delayCheck(int d) {
+delay(d);
+  //nt time_now = millis();
+  // //perform all checks in this loop
+  // while (millis() < (time_now + d)) {
+  //   //if analogRead((distIn < 100)) return;
+  //     if (analogRead(distIn) > 100)
+  //     digitalWrite(distOut, LOW);
+  // else {
+  //   digitalWrite(distOut, HIGH);
+  //   stop();
+  //   return;}
+
+  // }
 
 
-  }
-  return;
+  // }
+  // return;
 }
 
 
@@ -160,22 +245,32 @@ void followR(int val) {
     reference = val;
   curr = 0;
   int x = reference;
-  while (curr < 20 && curr > -20) {
+
+  while (1) {
+    x = fR(x);
+    if (x > 1500)
+      break;
+  }
+
+}
+int fR(int x) {
+  int curr = 0;
+  int reference = x;
+    while (curr < 20 && curr > -20) {
     //skkkrrrrrrrrtttt a little to the right
     forwardR(100, 100);
-    curr = reference - analogRead(col);;
-      if (analogRead(distIn) > 100) return;
+    curr = reference - analogRead(col);;  
+      if (analogRead(distIn) < 100) return 2000;
   }
   reference = analogRead(col);
   curr = 0;
   while (curr < 10 && curr > -10) {
     pivot_L(80, 70);
     curr = reference - analogRead(col);;
-  }
-  
-  followR(x);
+    if (analogRead(distIn) < 100) return 2000;
+  }  
+  return x;
 }
-
 void followL(int val) {
   int reference;
   int curr;
@@ -188,20 +283,31 @@ void followL(int val) {
     reference = val;
   curr = 0;
   int x = reference;
+  while (1) {
+    x = fL(x);
+    if (x > 1500)
+      break;
+  }
+
+  
+}
+int fL(int x) {
+  int curr = 0;
+    int reference = x;
   while (curr < 20 && curr > -20) {
     //skkkrrrrrrrrtttt a little to the right
     forwardL(100, 100);
-    curr = reference - analogRead(col);;
-      if (analogRead(distIn) > 100) return;  
+    curr = reference - analogRead(col);;  
+      if (analogRead(distIn) < 100) return 2000;
   }
   reference = analogRead(col);
   curr = 0;
   while (curr < 10 && curr > -10) {
     pivot_R(80, 70);
     curr = reference - analogRead(col);;
+    if (analogRead(distIn) < 100) return 2000;
   }
-  followL(x);
-  if (analogRead(distIn) < 100) return;
+  return x;
 }
 
 //p is out of 255
@@ -280,7 +386,7 @@ void forward(int p, int ms) {
   digitalWrite(M2A, HIGH);
 
   // Turn motor on 
-  analogWrite(M1CTL, p + 25);
+  analogWrite(M1CTL, p + 18);
   analogWrite(M2CTL, p);
   delayCheck(ms);
   analogWrite(M1CTL, 0);
@@ -303,11 +409,11 @@ void backward(int p, int ms) {
 }
 
 void crank90_R() {
-  pivot_R(77, 1150);
+  pivot_R(77, 1000);
 }
 
 void crank90_L() {
-  pivot_L(77, 1150);
+  pivot_L(77, 1000);
 }
 
 void turn_L(int p, int ms) {
@@ -519,10 +625,13 @@ void printMacAddress(byte mac[]) {
 
 void pinSetup() {
   pinMode(distOut, OUTPUT);
+  pinMode(R, OUTPUT);
+  pinMode(G, OUTPUT);
   pinMode(12, OUTPUT);
   pinMode(13, OUTPUT);
   pinMode(B_col, OUTPUT);
   pinMode(R_col, OUTPUT);
+  pinMode(horn, OUTPUT);
   
   pinMode(M1A, OUTPUT);
   pinMode(M1B, OUTPUT);
@@ -530,6 +639,7 @@ void pinSetup() {
   pinMode(M2A, OUTPUT);
   pinMode(M2B, OUTPUT);
   pinMode(M2CTL, OUTPUT);
+    pinMode(tail, OUTPUT);
   digitalWrite(M1CTL, LOW);
   digitalWrite(M1A, LOW);
   digitalWrite(M1B, LOW);
