@@ -36,6 +36,7 @@ float R1 = 2000.0;
 #define light_thresh 100
 
 #define tail 0
+#define head 1
 #define horn 11
 struct color {int val; int mag;};
 
@@ -177,7 +178,58 @@ void cha13enge() {
   digitalWrite(tail, HIGH);  
   followR(0);
 }
-void 
+void cha14enge() {
+  crank90_L();
+  forward(100, 1200);
+}
+void cha15enge() {
+  digitalWrite(R, HIGH);
+  digitalWrite(tail, HIGH);
+  digitalWrite(head, HIGH);
+  digitalWrite(G, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  digitalWrite(tail, LOW);
+  digitalWrite(head, LOW);
+  digitalWrite(G, LOW);
+  delay(250);
+  digitalWrite(R, HIGH);
+  digitalWrite(tail, HIGH);
+  digitalWrite(head, HIGH);
+  digitalWrite(G, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  digitalWrite(tail, LOW);
+  digitalWrite(head, LOW);
+  digitalWrite(G, LOW);
+  delay(250);  
+  digitalWrite(R, HIGH);
+  digitalWrite(tail, HIGH);
+  digitalWrite(head, HIGH);
+  digitalWrite(G, HIGH);
+  delay(250);
+  digitalWrite(R, LOW);
+  digitalWrite(tail, LOW);
+  digitalWrite(head, LOW);
+  digitalWrite(G, LOW);
+  delay(250);
+
+    for (int i = 0; i < 500; i++) {
+    digitalWrite(horn, LOW);
+    delay(1);
+    digitalWrite(horn, HIGH);
+    delay(1);
+  }  
+  delay(500);
+
+    for (int i = 0; i < 500; i++) {
+    digitalWrite(horn, LOW);
+    delay(1);
+    digitalWrite(horn, HIGH);
+    delay(1);
+  }  
+
+}
 
 
 
